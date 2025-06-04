@@ -1,19 +1,20 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { hashPassword } from '../utils/hashing';
 
-export interface IStudent extends Document {
+export interface IStudent {
     indexNumber: string;
     password: string;
     name: string;
     gender: 'male' | 'female' | 'other';
     contactNumber: string[];
     emergencyNumber: string;
-    bloodType?: string;
+    bloodType: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
     allergies?: string;
-    Degree: string;
+    degree: string;
     presentYear: number;
     department: string;
     isBlocked: boolean;
+    isVerified: boolean;
     year?: number;
     photo?: string;
 }
@@ -27,37 +28,34 @@ const studentSchema = new Schema<IStudent>({
     emergencyNumber: { type: String, required: true },
     bloodType: { type: String, required: true },
     allergies: { type: String },
+    degree: { type: String, required: true },
     presentYear: { type: Number, min: 1, max: 4, required: true },
     department: { type: String, required: true },
     isBlocked: { type: Boolean, default: false },
     photo: { type: String },
-    year: { type: Number }
-});
+    year: { type: Number },
+    isVerified: { type: Boolean, default: false }
+}, { timestamps: true });
 
-studentSchema.pre("save", function (next) {
-    if (this && this.indexNumber) {
-        const Parts = this.indexNumber.split('/');
-        if (Parts.length === 4) {
-            this.department = Parts[1];
-            this.year = Number(Parts[2]);
-        }
-    }
-    next();
-});
-
-studentSchema.pre("save",async function (next) {
-    if (!this.isModified("password")) return next();
-
+studentSchema.pre("save", async function (next) {
     try {
-        this.password = await hashPassword(this.password, 10);
-    }catch(error){
-        
+        if (this && this.indexNumber && this.isModified('indexNumber')) {
+            const parts = this.indexNumber.split('/');
+            if (parts.length === 4) {
+                this.department = parts[1];
+                this.year = Number(parts[2]);
+            }
+        }
+
+        if (this.isModified("password")) {
+            this.password = await hashPassword(this.password, 10);
+        }
+
+        next();
+    } catch (err: any) {
+        next(err);
     }
-})
-
-
-
-
+});
 
 const Student = model<IStudent>('Student', studentSchema);
 export default Student;

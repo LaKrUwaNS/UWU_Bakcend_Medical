@@ -6,7 +6,7 @@ const DoctorRouter = Router();
 
 
 // 
-DoctorRouter.get("/", RegisterDoctor);
+DoctorRouter.get("/", );
 
 
 

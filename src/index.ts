@@ -1,45 +1,49 @@
+// ==========================
+// Imports
+// ==========================
 import express from 'express';
-import { PORT } from './const/dotenv';
-import mongoConnect from './config/mongoDB';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import morgan from 'morgan';
 
+import { PORT } from './const/dotenv';
+import mongoConnect from './config/mongoDB';
+
+// ==========================
+// Server Setup
+// ==========================
 const server = express();
 
-// Data base connection
-// Importing the MongoDB connection function
-mongoConnect().then(() => {
-    console.log('MongoDB connected successfully');
+// ==========================
+// Database Connection
+// ==========================
+mongoConnect()
+    .then(() => {
+        console.log('✅ MongoDB connected successfully');
+    })
+    .catch((error) => {
+        console.error('❌ MongoDB connection failed:', error);
+        process.exit(1);
+    });
 
-}).catch(error => {
-    console.error('MongoDB connection failed:', error);
-    process.exit(1);
-});
+// ==========================
+// Middleware
+// ==========================
+server.use(morgan('dev')); // HTTP request logger
+server.use(helmet()); // Security headers
+server.use(express.json()); // Parse JSON bodies
+server.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+server.use(cookieParser()); // Parse cookies
 
-// Middleware setup
-server.use(express.json());
-server.use(helmet());
-server.use(express.urlencoded({ extended: true }));
-server.use(cookieParser());
+// ==========================
+// Routes
+// ==========================
+// TODO: Add your routes here
+// e.g., server.use('/api/users', userRouter);
 
-
-// Routers 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Importing the routers
+// ==========================
+// Start Server
+// ==========================
 server.listen(PORT, () => {
-    console.log('Server is running on http://localhost:3000');
+    console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
