@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { hashPassword } from '../utils/hashing';
+import { comparePassword, hashPassword } from '../utils/hashing';
 
 export interface IStudent {
     indexNumber: string;
@@ -56,6 +56,12 @@ studentSchema.pre("save", async function (next) {
         next(err);
     }
 });
+
+
+studentSchema.methods.comparePass = async function (enteredPassword: string): Promise<boolean> {
+    return comparePassword(enteredPassword, this.password);
+};
+
 
 const Student = model<IStudent>('Student', studentSchema);
 export default Student;
