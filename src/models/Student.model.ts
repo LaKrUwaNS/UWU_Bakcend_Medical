@@ -13,7 +13,6 @@ export interface IStudent {
     degree: string;
     presentYear: number;
     department: string;
-    isBlocked: boolean;
     isVerified: boolean;
     year?: number;
     photo?: string;
@@ -31,11 +30,10 @@ const studentSchema = new Schema<IStudent>({
     degree: { type: String, required: true },
     presentYear: { type: Number, min: 1, max: 4, required: true },
     department: { type: String, required: true },
-    isBlocked: { type: Boolean, default: false },
     photo: { type: String },
     year: { type: Number },
     isVerified: { type: Boolean, default: false }
-}, { timestamps: true });
+}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
 
 studentSchema.pre("save", async function (next) {
     try {

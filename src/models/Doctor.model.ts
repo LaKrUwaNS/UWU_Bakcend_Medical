@@ -26,7 +26,7 @@ const doctorSchema = new Schema<IDoctor>({
     securityCode: { type: String, required: true, default: undefined },
     title: { type: String, required: true },
     photo: { type: String },
-}, { timestamps: true });
+}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
 
 // Pre-save hook
 doctorSchema.pre<IDoctor>("save", async function (next) {

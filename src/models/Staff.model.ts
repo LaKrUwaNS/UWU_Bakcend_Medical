@@ -24,7 +24,7 @@ const staffSchema = new Schema<IStaff>({
     photo: { type: String },
     password: { type: String, required: true },
     securityCode: { type: String, required: true, default: undefined },
-}, { timestamps: true });
+}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
 
 // Pre-save hook to hash password and security code
 staffSchema.pre<IStaff>("save", async function (next) {

@@ -16,7 +16,16 @@ const otpSchema = new Schema<IOTP>({
     OTPexpire: { type: Date, required: true },
     createdAt: { type: Date, default: Date.now },
     Type: { type: String, enum: ['Email', 'Reset'], required: true, default: 'Email' },
-});
+},
+    {
+        timestamps: true,
+        toJSON: {
+            virtuals: true,
+        },
+        toObject: {
+            virtuals: true,
+        },
+    });
 
 // 3. Export model
 export const OTP = model<IOTP>('OTP', otpSchema);

@@ -5,9 +5,27 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import dotenv from 'dotenv';
 
-import { PORT } from './const/dotenv';
 import mongoConnect from './config/mongoDB';
+import next from 'next';
+
+// Load environment variables
+dotenv.config();
+
+const PORT = process.env.PORT || 3000;
+
+// ==========================
+// MongoDB Connection Function
+// ==========================
+const connectDB = async (): Promise<void> => {
+    try {
+        const connection = await mongoConnect();
+    } catch (error) {
+        console.error('Failed to connect to MongoDB:', error);
+        process.exit(1); // Exit process with failure
+    }
+};
 
 // ==========================
 // Server Setup
@@ -15,35 +33,27 @@ import mongoConnect from './config/mongoDB';
 const server = express();
 
 // ==========================
-// Database Connection
-// ==========================
-mongoConnect()
-    .then(() => {
-        console.log('✅ MongoDB connected successfully');
-    })
-    .catch((error) => {
-        console.error('❌ MongoDB connection failed:', error);
-        process.exit(1);
-    });
-
-// ==========================
 // Middleware
 // ==========================
-server.use(morgan('dev')); // HTTP request logger
-server.use(helmet()); // Security headers
-server.use(express.json()); // Parse JSON bodies
-server.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
-server.use(cookieParser()); // Parse cookies
+server.use(morgan('dev'));
+server.use(helmet());
+server.use(express.json());
+server.use(express.urlencoded({ extended: true }));
+server.use(cookieParser());
 
 // ==========================
-// Routes
+// Routes (Add your routes here)
 // ==========================
-// TODO: Add your routes here
 // e.g., server.use('/api/users', userRouter);
 
 // ==========================
-// Start Server
+// Start server after DB connection
 // ==========================
-server.listen(PORT, () => {
-    console.log(`🚀 Server is running on http://localhost:${PORT}`);
-});
+const startServer = async () => {
+    await connectDB();
+    server.listen(PORT, () => {
+        console.log(`🚀 Server is running on http://localhost:${PORT}`);
+    });
+};
+
+startServer();

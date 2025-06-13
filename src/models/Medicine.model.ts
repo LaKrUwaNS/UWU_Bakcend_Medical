@@ -14,6 +14,15 @@ const medicineSchema = new Schema<IMedicine>({
     quantity: { type: Number, required: true, min: 0 },
     inventoryKey: { type: String, required: true },
     inventoryId: { type: Schema.Types.ObjectId, ref: 'Inventory', required: true },
-});
+},
+    {
+        timestamps: true,
+        toJSON: {
+            virtuals: true,
+        },
+        toObject: {
+            virtuals: true,
+        },
+    });
 
 export const Medicine = model<IMedicine>('Medicine', medicineSchema);

@@ -19,6 +19,15 @@ const medicalRequestSchema = new Schema<IMedicalRequest>({
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
     timeNeeded: { type: String, required: true },
     reason: { type: String, required: true },
-});
+},
+    {
+        timestamps: true,
+        toJSON: {
+            virtuals: true,
+        },
+        toObject: {
+            virtuals: true,
+        },
+    });
 
 export const MedicalRequest = model<IMedicalRequest>('MedicalRequest', medicalRequestSchema);

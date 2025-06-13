@@ -21,6 +21,15 @@ const sessionSchema = new Schema<ISession>({
     accessToken: { type: String, required: true },
     refreshToken: { type: String, required: true },
     isAvailable: { type: Boolean, default: true },
-});
+},
+    {
+        timestamps: true,
+        toJSON: {
+            virtuals: true,
+        },
+        toObject: {
+            virtuals: true,
+        },
+    });
 
 export const Session = model<ISession>('Session', sessionSchema);

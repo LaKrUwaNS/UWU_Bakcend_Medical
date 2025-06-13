@@ -13,6 +13,7 @@ export interface IPrescription extends Document {
     date: Date;
     description: string;
     drugs: IDrugEntry[];
+    inventoryId: Types.ObjectId;
 }
 
 const prescriptionSchema = new Schema<IPrescription>({
@@ -27,6 +28,16 @@ const prescriptionSchema = new Schema<IPrescription>({
             quantity: { type: Number, required: true, min: 1 },
         },
     ],
-});
+    inventoryId: { type: Schema.Types.ObjectId, ref: 'Inventory', required: true },
+},
+    {
+        timestamps: true,
+        toJSON: {
+            virtuals: true,
+        },
+        toObject: {
+            virtuals: true,
+        },
+    });
 
 export const Prescription = model<IPrescription>('Prescription', prescriptionSchema);
