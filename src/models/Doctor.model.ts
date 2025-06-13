@@ -5,9 +5,10 @@ export interface IDoctor extends Document {
     userName: string;
     fullName: string;
     password: string;
-    medicalEmail: string;
-    universityEmail: string;
-    medicalEmailVerified: boolean;
+    mobileNumber: string;
+    personalEmail: string;
+    professionalEmail: string;
+    professionalEmailVerified: boolean;
     securityCode: string;
     title: string;
     photo?: string;
@@ -20,13 +21,16 @@ const doctorSchema = new Schema<IDoctor>({
     userName: { type: String, required: true, unique: true },
     fullName: { type: String, required: true },
     password: { type: String, required: true },
-    medicalEmail: { type: String, required: true },
-    medicalEmailVerified: { type: Boolean, default: false },
-    universityEmail: { type: String, required: true },
+    mobileNumber: { type: String, required: true, unique: true },
+    personalEmail: { type: String, required: true, unique: true, validate: { validator: function(v: string) { return /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v); }, message: 'Please enter a valid email address' } },
+    professionalEmailVerified: { type: Boolean, default: false },
+    professionalEmail: { type: String, required: true, unique: true, validate: { validator: function(v: string) { return /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v); }, message: 'Please enter a valid email address' } },
     securityCode: { type: String, required: true, default: undefined },
     title: { type: String, required: true },
     photo: { type: String },
 }, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
+
+
 
 // Pre-save hook
 doctorSchema.pre<IDoctor>("save", async function (next) {
@@ -41,6 +45,10 @@ doctorSchema.pre<IDoctor>("save", async function (next) {
     next();
 });
 
+
+
+
+//! Functions
 // Instance method to compare password
 doctorSchema.methods.comparePass = async function (enteredPassword: string): Promise<boolean> {
     return comparePassword(enteredPassword, this.password);

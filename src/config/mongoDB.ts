@@ -1,5 +1,5 @@
 import mongoose, { Mongoose } from 'mongoose';
-import { MONGO_URI } from '../const/dotenv';
+import { MONGO_URI } from '../utils/dotenv';
 
 const mongoConnect = async (): Promise<Mongoose> => {
     try {

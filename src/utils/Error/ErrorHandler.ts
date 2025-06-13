@@ -15,7 +15,7 @@ export const handleError = (error: any, res: Response) => {
 };
 
 
-export const withAsyncErrorHandling = <T = any>(fn: AsyncFunction<T>) => {
+export const TryCatch = <T = any>(fn: AsyncFunction<T>) => {
     return async (...args: Parameters<typeof fn>): Promise<void> => {
         try {
             await fn(...args);

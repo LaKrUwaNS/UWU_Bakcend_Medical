@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { RegisterDoctor } from "../controller/Doctor.controller";
+import { RegisterDoctor } from "../controller/Auth.controller";
 
 const DoctorRouter = Router();
 
