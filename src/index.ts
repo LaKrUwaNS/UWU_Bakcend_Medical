@@ -8,7 +8,8 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 
 import mongoConnect from './config/mongoDB';
-import next from 'next';
+import DoctorRouter from './router/Doctor.route';
+
 
 // Load environment variables
 dotenv.config();
@@ -44,7 +45,8 @@ server.use(cookieParser());
 // ==========================
 // Routes (Add your routes here)
 // ==========================
-// e.g., server.use('/api/users', userRouter);
+
+server.use('/doctor', DoctorRouter);
 
 // ==========================
 // Start server after DB connection

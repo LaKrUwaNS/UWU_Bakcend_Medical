@@ -28,4 +28,5 @@ const otpSchema = new Schema<IOTP>({
     });
 
 // 3. Export model
-export const OTP = model<IOTP>('OTP', otpSchema);
+const OTP = model<IOTP>('OTP', otpSchema);
+export default OTP;

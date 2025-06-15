@@ -3,7 +3,7 @@ import { Document, model, Schema, Types } from "mongoose";
 
 export interface ISession extends Document {
     date: Date;
-    sessionType: 'doctor' | 'staff';
+    sessionType: 'LOGIN' | 'LOGOUT';
     doctorId?: Types.ObjectId;
     staffId?: Types.ObjectId;
     studentId?: Types.ObjectId;
@@ -14,7 +14,7 @@ export interface ISession extends Document {
 
 const sessionSchema = new Schema<ISession>({
     date: { type: Date, required: true },
-    sessionType: { type: String, enum: ['doctor', 'staff'], required: true },
+    sessionType: { type: String, enum: ['LOGIN', 'LOGOUT'], required: true },
     doctorId: { type: Schema.Types.ObjectId, ref: 'Doctor' },
     staffId: { type: Schema.Types.ObjectId, ref: 'Staff' },
     studentId: { type: Schema.Types.ObjectId, ref: 'Student' },

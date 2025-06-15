@@ -1,22 +1,22 @@
+// utils/sendTokenCookies.ts
 import { Response } from 'express';
-import { MinFromNow, DayFromNow } from './Date';
+import { FifteenMinutesFromNow, SevenDaysFromNow } from '../utils/Date'
 
-export const sendTokenCookie = (
+export const sendTokenCookies = (
     res: Response,
     accessToken: string,
-    refreshToken: string
+    refreshToken: string,
+    
 ) => {
-    res.cookie('access_token', accessToken, {
+    res.cookie('accessToken', accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: MinFromNow().getTime() - Date.now(), // duration in ms (~15 minutes)
+        maxAge: FifteenMinutesFromNow().getTime() - Date.now(),
     });
 
-    res.cookie('refresh_token', refreshToken, {
+    res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: DayFromNow().getTime() - Date.now(), // duration in ms (~1 day)
+        maxAge: SevenDaysFromNow().getTime() - Date.now(),
     });
 };
