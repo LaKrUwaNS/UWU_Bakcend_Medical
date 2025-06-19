@@ -10,6 +10,8 @@ export interface ISession extends Document {
     accessToken: string;
     refreshToken: string;
     isAvailable: boolean;
+    isDeleted: boolean;
+    expireAt: Date;
 }
 
 const sessionSchema = new Schema<ISession>({
@@ -21,6 +23,8 @@ const sessionSchema = new Schema<ISession>({
     accessToken: { type: String, required: true },
     refreshToken: { type: String, required: true },
     isAvailable: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false },
+    expireAt: { type: Date, required: true },
 },
     {
         timestamps: true,
