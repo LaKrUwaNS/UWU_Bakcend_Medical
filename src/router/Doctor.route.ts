@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { DoctorLogging, ForgotPassword, Logout, RegisterDoctor, ResetPassword, TestMail, VerifyRegisterOTP } from "../controller/Auth.controller";
+import { DoctorLogging, ForgotPassword, Logout, RegisterDoctor, ResetPassword, TestMail, VerifyRegisterOTP } from "../controller/doctor/Auth.controller";
 import { doctorZodSchema, validateMiddleware } from "../middleware/validate.middleware";
 import { otpVerificationSchema } from "../middleware/validate.middleware";
 import { loginSchema } from "../middleware/validate.middleware";

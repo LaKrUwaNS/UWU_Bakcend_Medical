@@ -1,6 +1,7 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 import { comparePassword, hashPassword } from '../utils/hashing';
 
+// Extend the base interface with the method
 export interface IStudent {
     indexNumber: string;
     password: string;
@@ -18,7 +19,12 @@ export interface IStudent {
     photo?: string;
 }
 
-const studentSchema = new Schema<IStudent>({
+// Add instance methods here
+export interface IStudentDocument extends IStudent, Document {
+    comparePass(enteredPassword: string): Promise<boolean>;
+}
+
+const studentSchema = new Schema<IStudentDocument>({
     indexNumber: { type: String, required: true, unique: true },
     password: { type: String, required: true, minlength: 6 },
     name: { type: String, required: true },
@@ -33,9 +39,14 @@ const studentSchema = new Schema<IStudent>({
     photo: { type: String },
     year: { type: Number },
     isVerified: { type: Boolean, default: false }
-}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
-studentSchema.pre("save", async function (next) {
+// Pre-save hook
+studentSchema.pre<IStudentDocument>("save", async function (next) {
     try {
         if (this && this.indexNumber && this.isModified('indexNumber')) {
             const parts = this.indexNumber.split('/');
@@ -55,11 +66,10 @@ studentSchema.pre("save", async function (next) {
     }
 });
 
-
+// Instance method
 studentSchema.methods.comparePass = async function (enteredPassword: string): Promise<boolean> {
     return comparePassword(enteredPassword, this.password);
 };
 
-
-const Student = model<IStudent>('Student', studentSchema);
+const Student = model<IStudentDocument>('Student', studentSchema);
 export default Student;

@@ -1,15 +1,15 @@
 import { Request, Response } from "express";
-import { TryCatch } from "../utils/Error/ErrorHandler";
-import { generateOtpEmailHtml } from "../const/Mail/OTP.templete";
-import { SendMail } from "../config/Nodemailer";
-import { VerifyOTP } from "../utils/OTPGen";
-import OTP from "../models/OTP.model";
-import Doctor from "../models/Doctor.model";
-import { sendTokenCookies } from "../utils/Cookies";
-import { Session } from "../models/session.model";
-import { generateAccessToken, generateRefreshToken } from "../utils/WebToken";
-import { generateResetOtpEmailHtml } from "../const/Mail/ResepOTP.templete";
-import { FifteenMinutesFromNow, Now } from "../utils/Date";
+import { TryCatch } from "../../utils/Error/ErrorHandler";
+import { generateOtpEmailHtml } from "../../const/Mail/OTP.templete";
+import { SendMail } from "../../config/Nodemailer";
+import { VerifyOTP } from "../../utils/OTPGen";
+import OTP from "../../models/OTP.model";
+import Doctor from "../../models/Doctor.model";
+import { sendTokenCookies } from "../../utils/Cookies";
+import { Session } from "../../models/session.model";
+import { generateAccessToken, generateRefreshToken } from "../../utils/WebToken";
+import { generateResetOtpEmailHtml } from "../../const/Mail/ResepOTP.templete";
+import { FifteenMinutesFromNow, Now } from "../../utils/Date";
 
 
 // !TestMail

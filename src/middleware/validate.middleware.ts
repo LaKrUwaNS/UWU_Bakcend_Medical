@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { Request, Response, NextFunction, RequestHandler } from "express";
 
+
+//!  Doctor
 export const doctorZodSchema = z.object({
     userName: z.string().min(3, "Username must be at least 3 characters"),
     fullName: z.string().min(1, "Full name is required"),
@@ -32,6 +34,57 @@ export const resetPasswordSchema = z.object({
     email: z.string().email("Invalid email address"),
     otp: z.string().length(6, "OTP must be 6 characters"),
     password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+
+
+//!Student
+// Common fields
+const genderEnum = z.enum(['male', 'female', 'other']);
+const bloodTypeEnum = z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
+
+// 1. Register Student
+export const StudentregisterStudentSchema = z.object({
+    indexNumber: z.string().min(1),
+    password: z.string().min(6),
+    name: z.string().min(1),
+    gender: genderEnum,
+    contactNumber: z.array(z.string().min(7)), // phone number strings
+    emergencyNumber: z.string().min(7),
+    bloodType: bloodTypeEnum,
+    allergies: z.string().optional(),
+    degree: z.string().min(1),
+    presentYear: z.number().int().min(1).max(4),
+    photo: z.string().url().optional()
+});
+
+// 2. Verify Student OTP
+export const StudentverifyStudentOtpSchema = z.object({
+    indexNumber: z.string().min(1),
+    otp: z.string().min(1),
+});
+
+// 3. Login Student
+export const StudentloginStudentSchema = z.object({
+    indexNumber: z.string().min(1),
+    password: z.string().min(6),
+});
+
+// 4. Forgot Password
+export const StudentforgotPasswordSchema = z.object({
+    indexNumber: z.string().min(1),
+});
+
+// 5. Reset Password
+export const StudentresetPasswordSchema = z.object({
+    indexNumber: z.string().min(1),
+    otp: z.string().min(1),
+    newPassword: z.string().min(6),
+});
+
+// 6. Logout Student
+export const StudentlogoutStudentSchema = z.object({
+    indexNumber: z.string().min(1),
 });
 
 // Middleware to validate and send simplified errors
