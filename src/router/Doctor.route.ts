@@ -5,9 +5,12 @@ import { otpVerificationSchema } from "../middleware/validate.middleware";
 import { loginSchema } from "../middleware/validate.middleware";
 import { forgotPasswordSchema } from "../middleware/validate.middleware";
 import { resetPasswordSchema } from "../middleware/validate.middleware";
-
+import { isDoctorLoggedIn } from "../middleware/isDotorlogin";
+import { getDashBoard } from "../controller/doctor/pages/Dashboard.controller";
 
 const DoctorRouter = Router();
+
+// Public Routers
 
 // !Test mail
 DoctorRouter.post('/test', TestMail);   // localhost:5000/doctor/test
@@ -29,5 +32,11 @@ DoctorRouter.post("/reset-password", validateMiddleware(resetPasswordSchema), Re
 DoctorRouter.post("/logout", Logout); //localhost:5000/doctor/logout
 
 
+
+// Page Routers Need to Login user to process
+
+
+// !Doctor Dashboard
+DoctorRouter.get("/dashboard", isDoctorLoggedIn, getDashBoard); //localhost:5000/doctor/dashboard
 
 export default DoctorRouter;

@@ -11,6 +11,8 @@ export interface IStaff extends Document {
     password: string;
     securityCode: string;
     isVerified: boolean;
+    isAvailable: boolean;
+    reason?: string;
 
     comparePass(enteredPassword: string): Promise<boolean>;
     compareSecurityCode(enteredCode: string): Promise<boolean>;
@@ -27,6 +29,8 @@ const staffSchema = new Schema<IStaff>(
         password: { type: String, required: true },
         securityCode: { type: String, required: true, default: undefined },
         isVerified: { type: Boolean, default: false },
+        isAvailable: { type: Boolean, default: true },
+        reason: { type: String, enum: ['annual leave', 'sick leave', 'personal leave', 'absent'] },
     },
     {
         timestamps: true,
