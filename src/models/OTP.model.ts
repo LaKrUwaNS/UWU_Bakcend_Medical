@@ -1,4 +1,6 @@
 import { Document, model, Schema } from "mongoose";
+import { comparePassword } from "../utils/hashing";
+import { hashPassword } from "../utils/hashing";
 
 // 1. Interface definition
 export interface IOTP extends Document {
@@ -7,6 +9,7 @@ export interface IOTP extends Document {
     OTPexpire: Date;
     createdAt: Date;
     Type: 'Email' | 'Reset';
+    compareOtp: (otp: string) => Promise<boolean>;
 }
 
 // 2. Schema definition
@@ -27,6 +30,20 @@ const otpSchema = new Schema<IOTP>({
         },
     });
 
-// 3. Export model
+// pre save
+otpSchema.pre('save', async function (next) {
+    if (this.isModified('OTP')) {
+        this.OTP = await hashPassword(this.OTP, 10);
+    }
+    next();
+});
+
+
+
+// Add compareOtp method
+otpSchema.methods.compareOtp = async function (otp: string): Promise<boolean> {
+    return await comparePassword(otp, this.OTP);
+};
+
 const OTP = model<IOTP>('OTP', otpSchema);
 export default OTP;

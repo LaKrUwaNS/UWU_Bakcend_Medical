@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { AuthenticatedRequest } from "../../../middleware/isDotorlogin";
+import { AuthenticatedRequest } from "../../../middleware/CheckLogin/isDotorlogin";
 import { Prescription } from "../../../models/prescription.model";
 import { TryCatch } from "../../../utils/Error/ErrorHandler";
 import { Staff } from "../../../models/Staff.model";

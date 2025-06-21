@@ -1,7 +1,6 @@
 // utils/sendTokenCookies.ts
 import { Response } from 'express';
 import { FifteenMinutesFromNow, SevenDaysFromNow } from '../utils/Date'
-import { generateAccessToken } from './WebToken';
 
 export const sendTokenCookies = (
     res: Response,
@@ -23,19 +22,17 @@ export const sendTokenCookies = (
 };
 
 
-export const sendTokenAsCookie = (res: Response, userId: string, message = "Login Success") => {
-    const token = generateAccessToken(userId);
+export const sendTokenAsCookie = (res: Response, token: string) => {
 
-    res.cookie("token", token, {
+    res.cookie("accessToken", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production", // only https in production
         sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 days
     });
 
     res.status(200).json({
         success: true,
-        message,
         token,
     });
 };
