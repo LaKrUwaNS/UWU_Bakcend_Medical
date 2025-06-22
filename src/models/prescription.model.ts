@@ -6,19 +6,17 @@ interface IDrugEntry {
 }
 
 export interface IPrescription extends Document {
-    sessionId: Types.ObjectId;
     studentId: Types.ObjectId;
     doctorId: Types.ObjectId;
     date: Date;
     description: string;
     drugs: IDrugEntry[];
     inventoryId: Types.ObjectId;
-    queueStatus: 'waiting' | 'serving' | 'done'; // NEW FIELD
+    queueStatus: 'waiting' | 'serving' | 'done'; 
 }
 
 const prescriptionSchema = new Schema<IPrescription>(
     {
-        sessionId: { type: Schema.Types.ObjectId, ref: 'Session', required: true },
         studentId: { type: Schema.Types.ObjectId, ref: 'Student', required: true },
         doctorId: { type: Schema.Types.ObjectId, ref: 'Doctor', required: true },
         date: { type: Date, required: true },
@@ -31,7 +29,6 @@ const prescriptionSchema = new Schema<IPrescription>(
         ],
         inventoryId: { type: Schema.Types.ObjectId, ref: 'Inventory', required: true },
 
-        // ✅ New field to track queue progress
         queueStatus: {
             type: String,
             enum: ['waiting', 'serving', 'done'],

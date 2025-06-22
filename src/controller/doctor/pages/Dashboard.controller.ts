@@ -18,7 +18,7 @@ export const getDashBoard = TryCatch(async (req: AuthenticatedRequest, res: Resp
         StudentCount, // prescription issued students count
         StaffCont, // Working Staff today
         NotAvailableStaffCount, // Not Available Staff today
-        absentStaffCount,
+        absentStaffCount, // Absent Staff today
         Todayrequests, // today requests list
         TodayrequestCount, // today requests count
         Nextpatient, // next patient
