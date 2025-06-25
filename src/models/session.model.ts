@@ -1,4 +1,5 @@
 import { Document, model, Schema, Types } from "mongoose";
+import { FifteenMinutesFromNow } from "../utils/Date";
 
 export interface ISession extends Document {
     date: Date;
@@ -8,6 +9,8 @@ export interface ISession extends Document {
     accessToken: string;
     sessionType: string;
     expireAt: Date;
+    isActive(): boolean;
+    // Removed passwordcheck since it's not implemented
 }
 
 const sessionSchema = new Schema<ISession>(
@@ -18,7 +21,12 @@ const sessionSchema = new Schema<ISession>(
         studentId: { type: Schema.Types.ObjectId, ref: 'Student' },
         accessToken: { type: String, required: true },
         sessionType: { type: String, enum: ['LOGIN', 'LOGOUT'], required: true },
-        expireAt: { type: Date, required: true },
+        expireAt: {
+            type: Date,
+            required: true,
+            default: () => FifteenMinutesFromNow(),  // Use function to generate fresh default
+            index: { expires: 0 },  // Optional: TTL index to auto-remove expired sessions
+        },
     },
     {
         timestamps: true,
@@ -27,7 +35,7 @@ const sessionSchema = new Schema<ISession>(
     }
 );
 
-// ✅ Custom validator: only one of the user fields must be set
+// Validator: exactly one user reference must be provided
 sessionSchema.pre('save', function (next) {
     const session = this as ISession;
     const refs = [session.doctorId, session.staffId, session.studentId].filter(Boolean);
@@ -38,5 +46,11 @@ sessionSchema.pre('save', function (next) {
 
     next();
 });
+
+// Method to check if session is active (not expired)
+sessionSchema.methods.isActive = function (): boolean {
+    const session = this as ISession;
+    return new Date() < session.expireAt;
+};
 
 export const Session = model<ISession>('Session', sessionSchema);

@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { TokenExpiredError } from "jsonwebtoken";
 import { TryCatch } from "../../utils/Error/ErrorHandler";
 import Doctor from "../../models/Doctor.model";
-import { ACCESS_TOKEN_SECRET } from "../../utils/dotenv";
 import { sendResponse } from "../../utils/response";
 import { Session } from "../../models/session.model";
+import { generateAccessToken } from "../../utils/WebToken";
+import { sendTokenAsCookie } from "../../utils/Cookies";
 
 // Extend Request to include `user`
 export interface AuthenticatedRequest extends Request {
@@ -12,40 +12,65 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export const isDoctorLogin = TryCatch(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const token = req.cookies?.accessToken;
+    let accessToken = req.cookies.accessToken;
 
-    if (!token) {
-        return sendResponse(res, 401, false, "Access token missing", null);
-    }
-
-    try {
-        const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET as string) as jwt.JwtPayload;
-
-        if (!decoded?.id) {
-            return sendResponse(res, 401, false, "Invalid token payload", null);
+    // 1. No token? Try login using email & password
+    if (!accessToken) {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return sendResponse(res, 400, false, "Email and password are required");
         }
 
-        // Find session and ensure doctor is linked
-        const userSession = await Session.findOne({ accessToken: token });
-
-        if (!userSession) {
-            return sendResponse(res, 401, false, "Session not found or user not linked", null);
-        }
-
-        const doctor = await Doctor.findById(userSession.doctorId);
-
+        const doctor = await Doctor.findOne({ email });
         if (!doctor) {
-            return sendResponse(res, 401, false, "Doctor not found", null);
+            return sendResponse(res, 404, false, "Doctor not found");
         }
 
-        req.user = doctor;
-        next();
-
-    } catch (error: any) {
-        if (error instanceof TokenExpiredError) {
-            return sendResponse(res, 401, false, "Session expired. Please log in again.", null);
+        const isPasswordValid = await doctor.Doctorpasswordcompare(password);
+        if (!isPasswordValid) {
+            return sendResponse(res, 401, false, "Unauthorized: Invalid password");
         }
 
-        return sendResponse(res, 401, false, "Invalid token", null);
+        const existingSession = await Session.findOne({ doctorId: doctor._id, sessionType: "LOGIN" });
+        if (existingSession && existingSession.isActive()) {
+            return sendResponse(res, 401, false, "Unauthorized: Active session already exists");
+        }
+
+        // Generate new access token
+        accessToken = generateAccessToken(doctor._id.toString());
+
+        // Create new session
+        const newSession = new Session({
+            date: new Date(),
+            doctorId: doctor._id,
+            accessToken,
+            sessionType: "LOGIN",
+            expireAt: new Date(Date.now() + 15 * 60 * 1000),
+        });
+
+        await newSession.save();
+
+        // Set cookie (optional)
+        sendTokenAsCookie(res, accessToken);
+
+        req.user = doctor._id;
+        return next(); // Important to proceed
     }
+
+    // 2. Access token exists in cookie: Validate session
+    const session = await Session.findOne({ accessToken });
+    if (!session) {
+        return sendResponse(res, 401, false, "Unauthorized: Session not found");
+    }
+
+    if (session.sessionType !== "LOGIN") {
+        return sendResponse(res, 401, false, "Unauthorized: Invalid session type");
+    }
+
+    if (!session.isActive()) {
+        return sendResponse(res, 401, false, "Unauthorized: Session expired");
+    }
+
+    req.user = session.doctorId;
+    next(); // Proceed to the next middleware/route
 });

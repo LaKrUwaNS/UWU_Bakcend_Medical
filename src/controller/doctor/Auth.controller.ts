@@ -14,6 +14,7 @@ import { cloudinary } from "../../config/Claudenary";
 import Doctor from "../../models/Doctor.model";
 import { sendResponse } from "../../utils/response";
 import { AuthenticatedRequest } from "../../middleware/CheckLogin/isDotorlogin";
+import { generateWelcomeEmailHtml } from "../../const/Mail/Welcome.templete";
 
 
 //! Testing Controllers
@@ -98,7 +99,7 @@ export const RegisterDoctor = TryCatch(async (req: Request, res: Response) => {
 
 // !✅ Profile Photo Upload
 export const ProfilePhotoupload = TryCatch(async (req: AuthenticatedRequest, res: Response) => {
-    const user = req.user;  
+    const user = req.user;
 
     const file = req.file as Express.Multer.File | undefined;
     if (!file) {
@@ -162,6 +163,10 @@ export const VerifyRegisterOTP = TryCatch(async (req: Request, res: Response) =>
         date: new Date(),
     });
 
+    // send welcome email
+    await SendMail(doctor.professionalEmail, "Welcome to Our Platform", generateWelcomeEmailHtml(doctor.fullName));
+
+    // Return success response
     return sendResponse(res, 200, true, "OTP verified successfully")
 });
 

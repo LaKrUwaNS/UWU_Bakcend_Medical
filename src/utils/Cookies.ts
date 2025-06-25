@@ -2,6 +2,9 @@
 import { Response } from 'express';
 import { FifteenMinutesFromNow, SevenDaysFromNow } from '../utils/Date'
 
+
+// !For sending both access and refresh tokens as cookies
+// *This is used in the login and signup process to send both tokens as cookies
 export const sendTokenCookies = (
     res: Response,
     accessToken: string,
@@ -22,6 +25,8 @@ export const sendTokenCookies = (
 };
 
 
+// !For the senting the one cookie for session cookie authorization
+// *This is used in the login and signup process to send the access token as a cookie
 export const sendTokenAsCookie = (res: Response, token: string) => {
 
     res.cookie("accessToken", token, {
