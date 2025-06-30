@@ -1,7 +1,6 @@
 import { Schema, model, Document } from 'mongoose';
 import { comparePassword, hashPassword } from '../utils/hashing';
 
-// Extend the base interface with the method
 export interface IStudent {
     indexNumber: string;
     password: string;
@@ -17,9 +16,9 @@ export interface IStudent {
     isVerified: boolean;
     year?: number;
     photo?: string;
+    expireAt?: Date | null;
 }
 
-// Add instance methods here
 export interface IStudentDocument extends IStudent, Document {
     comparePass(enteredPassword: string): Promise<boolean>;
 }
@@ -38,14 +37,18 @@ const studentSchema = new Schema<IStudentDocument>({
     department: { type: String, required: true },
     photo: { type: String },
     year: { type: Number },
-    isVerified: { type: Boolean, default: false }
+    isVerified: { type: Boolean, default: false },
+    expireAt: { type: Date, default: null }
 }, {
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });
 
-// Pre-save hook
+// ✅ TTL Index - Automatically delete student when expireAt is reached
+studentSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
+
+// 🔒 Password and department/year setup
 studentSchema.pre<IStudentDocument>("save", async function (next) {
     try {
         if (this && this.indexNumber && this.isModified('indexNumber')) {
@@ -66,7 +69,7 @@ studentSchema.pre<IStudentDocument>("save", async function (next) {
     }
 });
 
-// Instance method
+// 🔐 Password comparison method
 studentSchema.methods.comparePass = async function (enteredPassword: string): Promise<boolean> {
     return comparePassword(enteredPassword, this.password);
 };

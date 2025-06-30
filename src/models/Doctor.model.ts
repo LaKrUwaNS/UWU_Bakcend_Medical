@@ -12,7 +12,7 @@ export interface IDoctor extends Document {
     Verified: boolean;
     securityCode: string;
     title: string;
-    expireAt: Date;
+    expireAt: Date | null;
     photo?: string;
 
     Doctorpasswordcompare: (enteredPassword: string) => Promise<boolean>;

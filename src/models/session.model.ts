@@ -7,10 +7,9 @@ export interface ISession extends Document {
     staffId?: Types.ObjectId;
     studentId?: Types.ObjectId;
     accessToken: string;
-    sessionType: string;
+    sessionType: 'LOGIN' | 'LOGOUT';
     expireAt: Date;
     isActive(): boolean;
-    // Removed passwordcheck since it's not implemented
 }
 
 const sessionSchema = new Schema<ISession>(
@@ -24,9 +23,8 @@ const sessionSchema = new Schema<ISession>(
         expireAt: {
             type: Date,
             required: true,
-            default: () => FifteenMinutesFromNow(),  // Use function to generate fresh default
-            index: { expires: 0 },  // Optional: TTL index to auto-remove expired sessions
-        },
+            default: () => FifteenMinutesFromNow()
+        }
     },
     {
         timestamps: true,
@@ -35,7 +33,10 @@ const sessionSchema = new Schema<ISession>(
     }
 );
 
-// Validator: exactly one user reference must be provided
+// ✅ TTL index to delete expired sessions automatically
+sessionSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
+
+// ✅ Ensure exactly one of doctor, staff, or student is referenced
 sessionSchema.pre('save', function (next) {
     const session = this as ISession;
     const refs = [session.doctorId, session.staffId, session.studentId].filter(Boolean);
@@ -47,7 +48,7 @@ sessionSchema.pre('save', function (next) {
     next();
 });
 
-// Method to check if session is active (not expired)
+// ✅ Method to check if session is still active
 sessionSchema.methods.isActive = function (): boolean {
     const session = this as ISession;
     return new Date() < session.expireAt;

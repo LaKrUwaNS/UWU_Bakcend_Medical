@@ -74,3 +74,66 @@ export const isDoctorLogin = TryCatch(async (req: AuthenticatedRequest, res: Res
     req.user = session.doctorId;
     next(); // Proceed to the next middleware/route
 });
+
+
+export const isDoctorLogin2 = TryCatch(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const token = req.cookies?.accessToken;
+
+    // ✅ If token exists, just allow access
+    if (token) {
+        return next();
+    }
+
+    // ✅ Get email and password from body
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return sendResponse(res, 400, false, "Email and password are required");
+    }
+
+    const doctor = await Doctor.findOne({ email });
+    if (!doctor) {
+        return sendResponse(res, 404, false, "Doctor not found");
+    }
+
+    const isPasswordValid = await doctor.Doctorpasswordcompare(password);
+    if (!isPasswordValid) {
+        return sendResponse(res, 401, false, "Unauthorized: Invalid password");
+    }
+
+    // ✅ Check for existing active session
+    const existingSession = await Session.findOne({ doctorId: doctor._id, sessionType: "LOGIN" });
+
+    if (existingSession && existingSession.isActive()) {
+        req.user = doctor._id;
+        return next();
+    }
+
+    if (existingSession && !existingSession.isActive()) {
+        await Session.deleteOne({ _id: existingSession._id });
+    }
+
+    // ✅ Create new session and token
+    const newAccessToken = generateAccessToken(doctor._id.toString());
+
+    const createNew = new Session({
+        date: new Date(),
+        doctorId: doctor._id,
+        accessToken: newAccessToken,
+        sessionType: "LOGIN",
+        expireAt: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
+    });
+
+    await createNew.save();
+
+    // ✅ Set token as cookie
+    res.cookie("accessToken", newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60 * 1000, // 15 mins
+    });
+
+    req.user = doctor._id;
+    return next();
+});

@@ -58,7 +58,7 @@ export const RegisterDoctor = TryCatch(async (req: Request, res: Response) => {
     if (existingDoctor) {
         return sendResponse(res, 400, false, "User already exists")
     }
-
+    
     let uploadResult;
     if (file) {
         // Upload the file to Cloudinary
@@ -147,6 +147,7 @@ export const VerifyRegisterOTP = TryCatch(async (req: Request, res: Response) =>
 
     // Mark as verified
     doctor.Verified = true;
+    doctor.expireAt = null; 
     await doctor.save();
 
     // Delete OTP after successful verification

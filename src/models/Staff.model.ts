@@ -1,5 +1,5 @@
 import { Document, model, Schema } from "mongoose";
-import { hashPassword, comparePassword } from "../utils/hashing"; // Make sure these are implemented
+import { hashPassword, comparePassword } from "../utils/hashing";
 
 export interface IStaff extends Document {
     name: string;
@@ -13,6 +13,7 @@ export interface IStaff extends Document {
     isVerified: boolean;
     isAvailable: boolean;
     reason?: string;
+    expireAt?: Date | null;
 
     comparePass(enteredPassword: string): Promise<boolean>;
     compareSecurityCode(enteredCode: string): Promise<boolean>;
@@ -31,6 +32,7 @@ const staffSchema = new Schema<IStaff>(
         isVerified: { type: Boolean, default: false },
         isAvailable: { type: Boolean, default: true },
         reason: { type: String, enum: ['annual leave', 'sick leave', 'personal leave', 'absent'] },
+        expireAt: { type: Date, default: null }
     },
     {
         timestamps: true,
@@ -39,7 +41,10 @@ const staffSchema = new Schema<IStaff>(
     }
 );
 
-// Pre-save hook to hash password and security code before saving
+// ✅ TTL index to automatically delete documents after `expireAt`
+staffSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
+
+// 🔐 Pre-save hook to hash password and security code
 staffSchema.pre<IStaff>("save", async function (next) {
     if (this.isModified("password")) {
         this.password = await hashPassword(this.password, 10);
@@ -52,14 +57,14 @@ staffSchema.pre<IStaff>("save", async function (next) {
     next();
 });
 
-// Instance method to compare entered password with hashed password
+// 🔐 Compare entered password with hashed password
 staffSchema.methods.comparePass = async function (
     enteredPassword: string
 ): Promise<boolean> {
     return comparePassword(enteredPassword, this.password);
 };
 
-// Instance method to compare entered security code with hashed security code
+// 🔐 Compare entered security code with hashed security code
 staffSchema.methods.compareSecurityCode = async function (
     enteredCode: string
 ): Promise<boolean> {
