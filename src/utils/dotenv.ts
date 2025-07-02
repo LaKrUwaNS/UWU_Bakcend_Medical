@@ -33,3 +33,6 @@ export const EMAIL = process.env.NODE_MAILER_MAIL;
 export const PASSWORD = process.env.NODE_MAILER_PASSWORD;
 
 
+// Verify Code
+export const VERIFY_CODE = process.env.VERIFY_CODE;
+

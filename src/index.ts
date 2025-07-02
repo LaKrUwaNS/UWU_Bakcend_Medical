@@ -5,26 +5,26 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import cors from 'cors'; 
 import dotenv from 'dotenv';
 
 import mongoConnect from './config/mongoDB';
 import DoctorRouter from './router/Doctor.route';
 
-
 // Load environment variables
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 // ==========================
 // MongoDB Connection Function
 // ==========================
 const connectDB = async (): Promise<void> => {
     try {
-        const connection = await mongoConnect();
+        await mongoConnect();
     } catch (error) {
-        console.error('Failed to connect to MongoDB:', error);
-        process.exit(1); // Exit process with failure
+        console.error('❌ Failed to connect to MongoDB:', error);
+        process.exit(1);
     }
 };
 
@@ -38,14 +38,17 @@ const server = express();
 // ==========================
 server.use(morgan('dev'));
 server.use(helmet());
+server.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 server.use(cookieParser());
 
 // ==========================
-// Routes (Add your routes here)
+// Routes
 // ==========================
-
 server.use('/doctor', DoctorRouter);
 
 // ==========================

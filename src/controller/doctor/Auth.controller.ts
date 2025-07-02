@@ -15,7 +15,7 @@ import Doctor from "../../models/Doctor.model";
 import { sendResponse } from "../../utils/response";
 import { AuthenticatedRequest } from "../../middleware/CheckLogin/isDotorlogin";
 import { generateWelcomeEmailHtml } from "../../const/Mail/Welcome.templete";
-
+import { VERIFY_CODE } from "../../utils/dotenv";
 
 //! Testing Controllers
 // ✅ Test Mail
@@ -48,26 +48,32 @@ export const TestMulter = TryCatch(async (req: Request, res: Response) => {
 
 // !✅ Register Doctor
 export const RegisterDoctor = TryCatch(async (req: Request, res: Response) => {
-    const { userName, fullName, password, personalEmail, professionalEmail, securityCode, title } = req.body;
-    const file = req.file as Express.Multer.File | undefined;
+    const {
+        userName,
+        fullName,
+        password,
+        personalEmail,
+        professionalEmail,
+        securityCode,
+        title
+    } = req.body;
 
-    // Check if doctor already exists by any unique identifier
+
+    if (!userName || !fullName || !password || !personalEmail || !professionalEmail || !securityCode || !title) {
+        return sendResponse(res, 400, false, "All fields are required");
+    }
+
+    /*if (VERIFY_CODE !== securityCode) {
+        return sendResponse(res, 400, false, "Invalid security code");
+    }*/
     const existingDoctor = await Doctor.findOne({
         $or: [{ personalEmail }, { professionalEmail }, { userName }]
     });
+
     if (existingDoctor) {
-        return sendResponse(res, 400, false, "User already exists")
-    }
-    
-    let uploadResult;
-    if (file) {
-        // Upload the file to Cloudinary
-        uploadResult = await cloudinary.uploader.upload(file.path, {
-            folder: "doctors_photos",
-        });
+        return sendResponse(res, 400, false, "User already exists");
     }
 
-    // Create new doctor
     const newDoctor = new Doctor({
         userName,
         fullName,
@@ -76,15 +82,12 @@ export const RegisterDoctor = TryCatch(async (req: Request, res: Response) => {
         professionalEmail,
         securityCode,
         title,
-        photo: uploadResult ? uploadResult.secure_url : undefined,
         expireAt: OneDayFromNow()
     });
 
     await newDoctor.save();
 
-    // Create OTP and send email
     const otpCode = CreateOTP();
-    await SendMail(professionalEmail, "OTP Verification", generateOtpEmailHtml(otpCode));
 
     await OTP.create({
         email: professionalEmail,
@@ -93,8 +96,11 @@ export const RegisterDoctor = TryCatch(async (req: Request, res: Response) => {
         Type: "Email",
     });
 
-    res.status(201).json({ message: "Doctor registered successfully, OTP sent" });
+    await SendMail(professionalEmail, "OTP Verification", generateOtpEmailHtml(otpCode));
+
+    return sendResponse(res, 201, true, "Doctor registered successfully, OTP sent");
 });
+
 
 
 // !✅ Profile Photo Upload
@@ -147,7 +153,7 @@ export const VerifyRegisterOTP = TryCatch(async (req: Request, res: Response) =>
 
     // Mark as verified
     doctor.Verified = true;
-    doctor.expireAt = null; 
+    doctor.expireAt = null;
     await doctor.save();
 
     // Delete OTP after successful verification

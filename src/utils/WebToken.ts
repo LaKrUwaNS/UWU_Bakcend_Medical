@@ -4,7 +4,7 @@ import { ACCESS_TOKEN_SECRET } from './dotenv';
 
 export const generateAccessToken = (userId: string): string => {
     return jwt.sign({ id: userId }, ACCESS_TOKEN_SECRET as string, {
-        expiresIn: '15m',
+        expiresIn: '7d',
     });
 };
 
